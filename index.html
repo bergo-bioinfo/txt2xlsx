@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="fr" xml:lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Yec'han Laizet">
+    <title>txt2xlsx</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+    <script type="text/javascript">
+        function handleFile(e) {
+            var files = e.target.files;
+            var i, f;
+            for (i = 0, f = files[i]; i != files.length; ++i) {
+            var reader = new FileReader();
+            var name = f.name;
+            reader.onload = function(e) {
+                var data = e.target.result;
+                var header = data.split("\n")[0]
+                var fieldSep = ","
+                if (header.search("	") >= 0) {
+                    fieldSep = "	"
+                }
+                if (header.search(";") >= 0) {
+                    fieldSep = ";"
+                }
+
+                data_as_json = Papa.parse(data, {delimiter: fieldSep, skipEmptyLines: true, header: true})
+                const worksheet = XLSX.utils.json_to_sheet(data_as_json.data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "data");
+                XLSX.writeFile(workbook, name + ".xlsx", { compression: true });
+            };
+            reader.readAsText(f);
+          }
+        }
+        </script>
+    <h1>
+        Converti un fichier texte (csv, tsv, txt) en xlsx.
+    </h1>
+    <p>Developpement et support : Y. Laizet</p>
+    <div>
+        <label>Charger un fichier csv, txt, tsv</label>
+        <br/><br/>
+        <input type="file" name="txt" id="txt" accept=".txt,.tsv,.csv" />
+        <br/><br/>
+        Le séparateur est automatiquement déduit de la première ligne en cherchant la présence dans l'ordre, d'une tabulation, puis d'un ";", sinon la "," sera utilisée.
+    </div>
+    <script type="text/javascript">
+        document.getElementById("txt").addEventListener('change', handleFile, false);
+    </script>
+</body>
+</html>
